@@ -19,7 +19,7 @@ import (
 	"io"
 
 	"github.com/fatih/color"
-	"github.com/llorllale/go-gitlint/internal/commits"
+	"github.com/vinetiworks/go-gitlint/internal/commits"
 )
 
 // Issue is a problem found with a commit.

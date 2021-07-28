@@ -18,7 +18,7 @@ import (
 	"fmt"
 	"regexp"
 
-	"github.com/llorllale/go-gitlint/internal/commits"
+	"github.com/vinetiworks/go-gitlint/internal/commits"
 )
 
 // Filter identifies an issue with a commit.

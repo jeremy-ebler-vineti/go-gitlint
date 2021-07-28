@@ -29,8 +29,8 @@ import (
 	"gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/plumbing/object"
 
-	"github.com/llorllale/go-gitlint/internal/commits"
-	"github.com/llorllale/go-gitlint/internal/repo"
+	"github.com/vinetiworks/go-gitlint/internal/commits"
+	"github.com/vinetiworks/go-gitlint/internal/repo"
 )
 
 func TestCommitID(t *testing.T) {
