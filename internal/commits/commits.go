@@ -16,6 +16,7 @@
 package commits
 
 import (
+	"fmt"
 	"io"
 	"io/ioutil"
 	"regexp"
@@ -24,7 +25,7 @@ import (
 
 	"github.com/vinetiworks/go-gitlint/internal/repo"
 	git "gopkg.in/src-d/go-git.v4"
-	"gopkg.in/src-d/go-git.v4/plumbing/object"
+	"gopkg.in/src-d/go-git.v4/plumbing"
 )
 
 // Commits returns commits.
@@ -72,24 +73,62 @@ func (c *Commit) Body() string {
 	return body
 }
 
+func parseBranch(r *git.Repository, stringRef string) plumbing.Hash {
+	if len(stringRef) == 0 {
+		return plumbing.ZeroHash
+	}
+	var remoteName string
+	var branchName string
+	branchParts := strings.SplitN(stringRef, "/", 2)
+	if len(branchParts) == 2 {
+		remoteName = branchParts[0]
+		branchName = branchParts[1]
+	} else {
+		remoteName = "origin"
+		branchName = branchParts[0]
+	}
+
+	remote, err := r.Remote(remoteName)
+	if err != nil {
+		panic(err)
+	}
+	refs, err := remote.List(&git.ListOptions{})
+	if err != nil {
+		panic(err)
+	}
+	targetRef := plumbing.ReferenceName(fmt.Sprintf("refs/heads/%s", branchName))
+	for _, ref := range refs {
+		if ref.Name() == targetRef {
+			return ref.Hash()
+		}
+	}
+
+	return plumbing.ZeroHash
+}
+
 // In returns the commits in the repo.
-func In(repository repo.Repo) Commits {
+func In(repository repo.Repo, toRefName string) Commits {
 	return func() []*Commit {
+		var err error
 		r := repository()
 
-		ref, err := r.Head()
+		fromRef, err := r.Head()
 		if err != nil {
 			panic(err)
 		}
 
-		iter, err := r.Log(&git.LogOptions{From: ref.Hash()})
+		toHash := parseBranch(r, toRefName)
+
+		iter, err := r.Log(&git.LogOptions{From: fromRef.Hash()})
 		if err != nil {
 			panic(err)
 		}
 
 		commits := make([]*Commit, 0)
-
-		err = iter.ForEach(func(c *object.Commit) error {
+		for c, err := iter.Next(); err == nil; c, err = iter.Next() {
+			if toHash != plumbing.ZeroHash && toHash == c.Hash {
+				break
+			}
 			commits = append(
 				commits,
 				&Commit{
@@ -103,9 +142,8 @@ func In(repository repo.Repo) Commits {
 					},
 				},
 			)
-
-			return nil
-		})
+		}
+		iter.Close()
 		if err != nil {
 			panic(err)
 		}

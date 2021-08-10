@@ -34,6 +34,7 @@ var (
 	bodyRegex        = kingpin.Flag("body-regex", `Commit message body must conform to this regular expression (default: ".*").`).Default(".*").String()                                          //nolint:lll,gochecknoglobals
 	bodyMaxLength    = kingpin.Flag("body-maxlen", `Max length for commit body (default: math.MaxInt32 - 1)`).Default(strconv.Itoa(math.MaxInt32 - 1)).Int()                                      //nolint:lll,gochecknoglobals
 	since            = kingpin.Flag("since", `A date in "yyyy-MM-dd" format starting from which commits will be analyzed (default: "1970-01-01").`).Default("1970-01-01").String()                //nolint:lll,gochecknoglobals
+	baseBranch       = kingpin.Flag("base-branch", `Only check commits between given branch and HEAD (e.g.: origin/main), else check all commits`).Default("").String()                           //nolint:lll,gochecknoglobals
 	msgFile          = kingpin.Flag("msg-file", `Only analyze the commit message found in this file (default: "").`).Default("").String()                                                         //nolint:lll,gochecknoglobals
 	maxParents       = kingpin.Flag("max-parents", `Max number of parents a commit can have in order to be analyzed (default: 1). Useful for excluding merge commits.`).Default("1").Int()        //nolint:lll,gochecknoglobals
 	authorNames      = kingpin.Flag("excl-author-names", "Don't lint commits with authors whose names match these comma-separated regular expressions (default: '$a').").Default("$a").String()   //nolint:lll,gochecknoglobals
@@ -74,6 +75,7 @@ func main() {
 											*since,
 											commits.In(
 												repo.Filesystem(*path),
+												*baseBranch,
 											),
 										),
 									),

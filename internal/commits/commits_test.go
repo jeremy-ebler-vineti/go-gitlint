@@ -71,7 +71,7 @@ func TestCommitBody(t *testing.T) {
 func TestIn(t *testing.T) {
 	msgs := []string{"subject1\n\nbody1", "subject2\n\nbody2", "subject3\n\nbody3"}
 	r := tmpRepo(t, msgs...)
-	cmits := commits.In(r)()
+	cmits := commits.In(r, "")()
 
 	assert.Len(t, cmits, len(msgs),
 		"commits.In() did not return the correct number of commits")
